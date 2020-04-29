@@ -2,6 +2,8 @@
 
 require_relative 'ImapOperation'
 
+require 'net/imap'
+
 module ImapHelper
   class Imap
     def initialize login, password
@@ -131,11 +133,11 @@ module ImapHelper
 
     def data_
       if @login.match(/@gmail\.com$/)
-        ImapHelper::Gmail.new
+        Gmail.new
       elsif @login.match(/@aol\.com$/)
-        ImapHelper::Aol.new
+        Aol.new
       elsif @login.match(/@wp\.pl$/)
-        ImapHelper::Wp.new
+        Wp.new
       else
         raise 'Unknown imap server'
       end
