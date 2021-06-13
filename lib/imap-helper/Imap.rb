@@ -15,7 +15,7 @@ module ImapHelper
     def fetch search, box: nil, exclude: []
       search = search.build if search.respond_to? :build
 
-      Imap::Operation.fetch(@imap, box || data_.inbox, exclude) { |toFetch|
+      ImapHelper::Operation.fetch(@imap, box || data_.inbox, exclude) { |toFetch|
         @imap.search(search).each { |msgId|
           toFetch << msgId
         }
@@ -25,13 +25,13 @@ module ImapHelper
     def moveMails directory, search, box: nil, &condition
       search = search.build if search.respond_to? :build
 
-      Imap::Operation.move(@imap, box || data_.inbox) { |toMove|
+      ImapHelper::Operation.move(@imap, box || data_.inbox) { |toMove|
         msgIds = @imap.search(search)
 
         if condition
           if msgIds.size > 0
             @imap.fetch(msgIds, ['UID', 'RFC822']).collect { |fetchData|
-              [fetchData.seqno, Imap::Message.new(fetchData: fetchData)]
+              [fetchData.seqno, ImapHelper::Message.new(fetchData: fetchData)]
             }.each { |msgId, msg|
               if condition.call(msg)
                 toMove << { msgId => directory }
@@ -49,12 +49,12 @@ module ImapHelper
     def deleteMails directory, search, &condition
       search = search.build if search.respond_to? :build
 
-      Imap::Operation.delete(@imap, directory) { |toDel|
+      ImapHelper::Operation.delete(@imap, directory) { |toDel|
         msgIds = @imap.search(search)
         if condition
           if msgIds.size > 0
             @imap.fetch(msgIds, ['UID', 'RFC822']).collect { |fetchData|
-              [fetchData.seqno, Imap::Message.new(fetchData: fetchData)]
+              [fetchData.seqno, ImapHelper::Message.new(fetchData: fetchData)]
             }.each { |msgId, msg|
               if condition.call(msg)
                 toDel << msgId
@@ -72,17 +72,17 @@ module ImapHelper
     end
 
     def rmdir directory
-      messages = Imap::Operation::examine(@imap, directory) {
+      messages = ImapHelper::Operation::examine(@imap, directory) {
         @imap.search(['ALL']).to_a.size
       }
 
       if messages == 0
-        Imap::Operation.rmdir @imap, directory
+        ImapHelper::Operation.rmdir @imap, directory
       end
     end
 
     def ls directory = nil
-      Imap::Operation::ls @imap, directory
+      ImapHelper::Operation::ls @imap, directory
     end
 
     def login
